@@ -25,7 +25,7 @@ def format_image(image):
     )
     # None is we don't found an image
     if not len(faces) > 0:
-        return None
+        return None, None
     max_area_face = faces[0]
     for face in faces:
         if face[2] * face[3] > max_area_face[2] * max_area_face[3]:
@@ -39,10 +39,10 @@ def format_image(image):
                            interpolation=cv2.INTER_CUBIC) / 255.
     except Exception:
         print("[+] Problem during resize")
-        return None
+        return None, None
     # cv2.imshow("Lol", image)
     # cv2.waitKey(0)
-    return image
+    return image, faces
 
 
 # Load Model
@@ -60,12 +60,14 @@ while True:
     # Capture frame-by-frame
     ret, frame = video_capture.read()
 
+    img, faces = format_image(frame)
     # Predict result with network
-    result = network.predict(format_image(frame))
+    result = network.predict(img)
 
     # Draw face in frame
-    # for (x,y,w,h) in faces:
-    #   cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0), 2)
+    if faces is not None:
+        for (x,y,w,h) in faces:
+          cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0), 2)
 
     # Write results in frame
     if result is not None:

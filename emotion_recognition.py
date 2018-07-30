@@ -12,7 +12,9 @@ from constants import *
 from os.path import isfile, join
 import random
 import sys
-
+import os
+import tensorflow as tf
+from tensorflow.python.tools import freeze_graph
 
 class EmotionRecognition:
 
@@ -41,7 +43,7 @@ class EmotionRecognition:
         )
         self.model = tflearn.DNN(
             self.network,
-            checkpoint_path=SAVE_DIRECTORY + '/emotion_recognition',
+            checkpoint_path=SAVE_DIRECTORY,
             max_checkpoints=1,
             tensorboard_verbose=2
         )
@@ -82,9 +84,28 @@ class EmotionRecognition:
         print('[+] Model trained and saved at ' + SAVE_MODEL_FILENAME)
 
     def load_model(self):
-        if isfile(join(SAVE_DIRECTORY, SAVE_MODEL_FILENAME)):
+        if not isfile(join(SAVE_DIRECTORY, SAVE_MODEL_FILENAME)):
             self.model.load(join(SAVE_DIRECTORY, SAVE_MODEL_FILENAME))
             print('[+] Model loaded from ' + SAVE_MODEL_FILENAME)
+
+    def freeze_model(self):
+        model_dir = join(SAVE_DIRECTORY, "model")
+        input_graph_name = "input_graph.pb"
+        tf.train.write_graph(self.model.session.graph, model_dir, input_graph_name)
+
+        prediction_graph = tf.Graph()
+        with prediction_graph.as_default():
+            freeze_graph.freeze_graph(input_graph=os.path.join(model_dir, input_graph_name),
+                                      input_saver="",
+                                      input_binary=False,
+                                      input_checkpoint=join(SAVE_DIRECTORY, SAVE_MODEL_FILENAME),
+                                      output_node_names="FullyConnected_1/Softmax",
+                                      restore_op_name="",
+                                      filename_tensor_name="",
+                                      output_graph=join(SAVE_DIRECTORY, FREEZE_MODEL_FILENAME),
+                                      clear_devices=True,
+                                      initializer_nodes=None,
+                                      variable_names_blacklist="")
 
 
 def show_usage():
@@ -104,5 +125,8 @@ if __name__ == "__main__":
         network.save_model()
     elif sys.argv[1] == 'poc':
         import poc
+    elif sys.argv[1] == 'freeze':
+        network.build_network()
+        network.freeze_model()
     else:
         show_usage()

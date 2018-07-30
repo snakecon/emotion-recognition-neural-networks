@@ -14,6 +14,7 @@ EMOTIONS = ['angry', 'disgusted', 'fearful',
             'happy', 'sad', 'surprised', 'neutral']
 SAVE_DIRECTORY = './data/'
 SAVE_MODEL_FILENAME = 'Gudi_model_100_epochs_20000_faces'
+FREEZE_MODEL_FILENAME = 'emotion_face_model.pb'
 DATASET_CSV_FILENAME = 'fer2013.csv'
 SAVE_DATASET_IMAGES_FILENAME = 'data_images.npy'
 SAVE_DATASET_LABELS_FILENAME = 'data_labels.npy'
